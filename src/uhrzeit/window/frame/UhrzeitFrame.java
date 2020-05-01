@@ -1,41 +1,5 @@
 package uhrzeit.window.frame;
 
-import static uhrzeit.data.DisplayData.DEFAULT_DATE;
-import static uhrzeit.data.DisplayData.DEFAULT_LAUFZEIT;
-import static uhrzeit.data.DisplayData.DEFAULT_PING;
-import static uhrzeit.data.DisplayData.DEFAULT_TIME;
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.HashMap;
-import java.util.Observable;
-import java.util.Observer;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.Timer;
-import javax.swing.border.LineBorder;
-
 import net.miginfocom.swing.MigLayout;
 import uhrzeit.NeoUhrzeit;
 import uhrzeit.data.DisplayData;
@@ -44,25 +8,37 @@ import uhrzeit.data.persistency.Einstellungen;
 import uhrzeit.window.component.ScalingLabel;
 import uhrzeit.window.panel.PingTargetPanel;
 
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.HashMap;
+import java.util.Observable;
+import java.util.Observer;
+
+import static uhrzeit.data.DisplayData.*;
+
 public class UhrzeitFrame extends JFrame implements Observer {
-
-	private static final long serialVersionUID = 6888138671600015994L;
+	
 	public static final int RESET_MODIFIKATOR = 1;
-
+	private static final long serialVersionUID = 6888138671600015994L;
 	private ScalingLabel uhrzeitLB;
 	private JLabel datumLB;
 	private JLabel pingLB;
 	private JLabel laufzeitLB;
 	private JMenuBar menuBar;
-
+	
 	private ExtendedPingLogFrame logframe;
 	private VollbildUhrzeitFrame vollbildFrame;
-
+	
 	private Timer frameTimer;
 	private Dimension startupSize;
 	private Dimension resetDimension;
 	private Point resetPoint;
-
+	
 	private UhrzeitFrame frame;
 	private JCheckBoxMenuItem ontopCB;
 	private JCheckBoxMenuItem resizableCB;
@@ -70,7 +46,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 	private JCheckBoxMenuItem uhrzeitPrafixBT, datumPrafixBT;
 	private JMenu fontSizeCB;
 	private JCheckBoxMenuItem uhrzeitBorderCB;
-
+	
 	private HashMap<JRadioButtonMenuItem, Integer> styleMap;
 	private ButtonGroup datumStyleGroup, uhrzeitStyleGroup;
 	private JMenu uhrzeitStyleMN;
@@ -82,12 +58,12 @@ public class UhrzeitFrame extends JFrame implements Observer {
 	private JCheckBoxMenuItem activateLogBT;
 	private JCheckBoxMenuItem quickShowBT;
 	private JCheckBoxMenuItem quickHideBT;
-
+	
 	public UhrzeitFrame() {
 		setTitle(NeoUhrzeit.TITLE + " " + NeoUhrzeit.VERSION);
 		setVisible(true);
 		frame = this;
-
+		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		datumLB = new JLabel(DEFAULT_DATE);
 		datumLB.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -97,21 +73,21 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		pingLB = new JLabel(DEFAULT_PING);
 		pingLB.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		uhrzeitLB.setPadding(1);
-
+		
 		styleMap = new HashMap<>();
 		datumStyleGroup = new ButtonGroup();
 		uhrzeitStyleGroup = new ButtonGroup();
-
+		
 		menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
-
+		
 		JMenu mnDatei = new JMenu("Datei");
 		menuBar.add(mnDatei);
-
+		
 		JMenu mnAngelegteDaten = new JMenu("Angelegte Daten");
 		mnDatei.add(mnAngelegteDaten);
-
-		mntmLaufzeitZurcksetzen = new JMenuItem("Laufzeit zur\u00FCcksetzen");
+		
+		mntmLaufzeitZurcksetzen = new JMenuItem("Laufzeit zur√ºcksetzen");
 		mntmLaufzeitZurcksetzen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				DisplayData d = NeoUhrzeit.getDisplayData();
@@ -120,7 +96,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		});
 		mnDatei.add(mntmLaufzeitZurcksetzen);
 		mnDatei.addSeparator();
-
+		
 		JMenuItem mntmAnzeigen = new JMenuItem("Anzeigen");
 		mntmAnzeigen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -129,35 +105,36 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnAngelegteDaten.add(mntmAnzeigen);
-
-		JMenuItem mntmLschen = new JMenuItem("L\u00F6schen");
+		
+		JMenuItem mntmLschen = new JMenuItem("L√∂schen");
 		mntmLschen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				boolean b = NeoUhrzeit.showConfirmMessage(
-						"Alle angelegten Daten werden permanent gelˆscht.\nDieser Vorgang kann nicht r¸ckg‰ngig gemacht werden.\n\nDas Programm wird beendet.\n\nFortfahren?",
+						"Alle angelegten Daten werden permanent gel√∂scht.\nDieser Vorgang kann nicht r√ºckg√§ngig gemacht werden." +
+								"\n\nDas Programm wird beendet.\n\nFortfahren?",
 						frame);
 				if (!b) {
 					return;
 				}
-
+				
 				boolean error = false;
 				try {
 					error = !NeoUhrzeit.getFilemanager().delete();
 				} catch (Exception e1) {
 					e1.printStackTrace();
-					NeoUhrzeit.showErrormessage("Fehler beim Lˆschen der Daten.", e1);
+					NeoUhrzeit.showErrormessage("Fehler beim L√∂schen der Daten.", e1);
 					return;
 				}
 				if (error) {
 					NeoUhrzeit.showErrormessage("Ein unbekannter und unerwarteter Fehler ist aufgetreten.");
 					return;
 				}
-
+				
 				System.exit(0);
 			}
 		});
 		mnAngelegteDaten.add(mntmLschen);
-
+		
 		JMenuItem mntmBeenden = new JMenuItem("Beenden");
 		mntmBeenden.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -166,23 +143,23 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnDatei.add(mntmBeenden);
-
+		
 		JMenu mnBearbeiten = new JMenu("Bearbeiten");
 		menuBar.add(mnBearbeiten);
-
-		fontSizeCB = new JMenu("Schriftgr\u00F6\u00DFe \u00E4ndern");
+		
+		fontSizeCB = new JMenu("Schriftgr√∂√üe √§ndern");
 		mnBearbeiten.add(fontSizeCB);
-
+		
 		mnBearbeiten.addSeparator();
-
-		JMenuItem mntmGrer = new JMenuItem("Gr\u00F6\u00DFer");
+		
+		JMenuItem mntmGrer = new JMenuItem("Gr√∂√üer");
 		mntmGrer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setFontsize(datumLB.getFont().getSize() + 1);
 			}
 		});
 		fontSizeCB.add(mntmGrer);
-
+		
 		JMenuItem mntmKleiner = new JMenuItem("Kleiner");
 		mntmKleiner.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -191,20 +168,20 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		});
 		fontSizeCB.add(mntmKleiner);
 		fontSizeCB.addSeparator();
-
+		
 		fintsizeBT = new JMenuItem("Selbst festlegen");
 		fontSizeCB.add(fintsizeBT);
-
-		uhrzeitStyleMN = new JMenu("Uhrzeit-Style \u00E4ndern");
+		
+		uhrzeitStyleMN = new JMenu("Uhrzeit-Style √§ndern");
 		mnBearbeiten.add(uhrzeitStyleMN);
-
-		datumStyleMN = new JMenu("Datum-Style \u00E4ndern");
+		
+		datumStyleMN = new JMenu("Datum-Style √§ndern");
 		mnBearbeiten.add(datumStyleMN);
-
+		
 		mnBearbeiten.addSeparator();
 		JMenu mnVollbildEinstellungen = new JMenu("Vollbild Einstellungen");
 		mnBearbeiten.add(mnVollbildEinstellungen);
-
+		
 		quickShowBT = new JCheckBoxMenuItem("Schnell anzeigen");
 		quickShowBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -213,7 +190,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnVollbildEinstellungen.add(quickShowBT);
-
+		
 		quickHideBT = new JCheckBoxMenuItem("Schnell verbergen");
 		quickHideBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -222,24 +199,24 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnVollbildEinstellungen.add(quickHideBT);
-
+		
 		fintsizeBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String s = JOptionPane.showInputDialog(frame, "Neue Grˆﬂe eingeben: ");
+				String s = JOptionPane.showInputDialog(frame, "Neue Gr√∂√üe eingeben: ");
 				if (NeoUhrzeit.isNumeric(s)) {
 					int i = Integer.parseInt(s);
 					setFontsize(i);
 				}
 			}
 		});
-
+		
 		JMenu mnAnsicht = new JMenu("Ansicht");
 		menuBar.add(mnAnsicht);
-
-		JMenu mnZurcksetzen = new JMenu("Zur\u00FCcksetzen");
+		
+		JMenu mnZurcksetzen = new JMenu("Zur√ºcksetzen");
 		mnAnsicht.add(mnZurcksetzen);
-
-		JMenuItem mntmFenstergre = new JMenuItem("Fenstergr\u00F6\u00DFe");
+		
+		JMenuItem mntmFenstergre = new JMenuItem("Fenstergr√∂√üe");
 		mntmFenstergre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				resetDimension = new Dimension(startupSize);
@@ -247,7 +224,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnZurcksetzen.add(mntmFenstergre);
-
+		
 		JMenuItem mntmFensterposition = new JMenuItem("Fensterposition");
 		mntmFensterposition.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -258,7 +235,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		});
 		mnZurcksetzen.add(mntmFensterposition);
 		mnZurcksetzen.addSeparator();
-
+		
 		JMenuItem mntmBeides = new JMenuItem("Beides");
 		mntmBeides.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -269,7 +246,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnZurcksetzen.add(mntmBeides);
-
+		
 		JMenuItem mntmBeidessofort = new JMenuItem("Beides (Sofort)");
 		mntmBeidessofort.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -278,7 +255,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnZurcksetzen.add(mntmBeidessofort);
-
+		
 		ontopCB = new JCheckBoxMenuItem("Immer im Vordergrund");
 		ontopCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -289,7 +266,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnAnsicht.addSeparator();
-
+		
 		uhrzeitBorderCB = new JCheckBoxMenuItem("Rahmen um \"Uhrzeit\"");
 		uhrzeitBorderCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -301,7 +278,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnAnsicht.add(uhrzeitBorderCB);
-
+		
 		mnAnsicht.addSeparator();
 		JMenuItem mntmVollbildmodus = new JMenuItem("Vollbild-Modus");
 		mntmVollbildmodus.addActionListener(new ActionListener() {
@@ -312,7 +289,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		mnAnsicht.add(mntmVollbildmodus);
 		mnAnsicht.addSeparator();
 		mnAnsicht.add(ontopCB);
-
+		
 		resizableCB = new JCheckBoxMenuItem("Nicht fixieren");
 		resizableCB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -322,10 +299,10 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnAnsicht.add(resizableCB);
-
+		
 		JMenu mnPing = new JMenu("Ping");
 		menuBar.add(mnPing);
-
+		
 		enablePingtestBT = new JCheckBoxMenuItem("Pingtest aktivieren");
 		enablePingtestBT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -336,12 +313,12 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		});
 		mnPing.add(enablePingtestBT);
 		mnPing.addSeparator();
-
-		JMenuItem mntmPingzielndern = new JMenuItem("Ping-Ziel \u00E4ndern");
+		
+		JMenuItem mntmPingzielndern = new JMenuItem("Ping-Ziel √§ndern");
 		mntmPingzielndern.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				PingTargetPanel p = new PingTargetPanel();
-				int i = JOptionPane.showConfirmDialog(frame, p, "Ping ‰ndern", JOptionPane.OK_CANCEL_OPTION);
+				int i = JOptionPane.showConfirmDialog(frame, p, "Ping √§ndern", JOptionPane.OK_CANCEL_OPTION);
 				if (i == JOptionPane.OK_OPTION) {
 					String s = p.getText();
 					setPingAdress(s);
@@ -349,23 +326,23 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		mnPing.add(mntmPingzielndern);
-
+		
 		pingZielTF = new JMenuItem("<Ziel>");
 		pingZielTF.setEnabled(false);
 		mnPing.add(pingZielTF);
 		mnPing.addSeparator();
-
+		
 		JMenu mnPingLog = new JMenu("Ping Log");
 		mnPing.add(mnPingLog);
-
+		
 		JMenuItem mntmZeigeErweitertenLog = new JMenuItem("Zeige erweiterten Log");
 		mntmZeigeErweitertenLog.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				logframe.zeigen();
 			}
 		});
-
-		JMenuItem mntmPingthresholdndern = new JMenuItem("Ping-Threshold \u00E4ndern");
+		
+		JMenuItem mntmPingthresholdndern = new JMenuItem("Ping-Threshold √§ndern");
 		mntmPingthresholdndern.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Einstellungen e = NeoUhrzeit.getEinstellungen();
@@ -378,22 +355,22 @@ public class UhrzeitFrame extends JFrame implements Observer {
 				}
 			}
 		});
-
+		
 		activateLogBT = new JCheckBoxMenuItem("Ping Log Aktivieren");
 		mnPingLog.add(activateLogBT);
 		mnPingLog.addSeparator();
 		mnPingLog.add(mntmPingthresholdndern);
-
+		
 		thresholdBT = new JMenuItem("[Threshold]");
 		thresholdBT.setEnabled(false);
 		mnPingLog.add(thresholdBT);
 		mnPingLog.addSeparator();
 		mnPingLog.add(mntmZeigeErweitertenLog);
-
+		
 		JMenu menu = new JMenu("?");
 		menuBar.add(menu);
-
-		JMenuItem mntmber = new JMenuItem("\u00DCber");
+		
+		JMenuItem mntmber = new JMenuItem("√úber");
 		mntmber.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				NeoUhrzeit.showInformationMessage(NeoUhrzeit.TITLE + " by " + NeoUhrzeit.AUTHOR + "\n"
@@ -401,21 +378,21 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		menu.add(mntmber);
-
+		
 		addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentMoved(ComponentEvent arg0) {
-				if (logframe != null)
-					logframe.align();
-			}
-
 			@Override
 			public void componentResized(ComponentEvent e) {
 				if (logframe != null)
 					logframe.align();
 			}
+			
+			@Override
+			public void componentMoved(ComponentEvent arg0) {
+				if (logframe != null)
+					logframe.align();
+			}
 		});
-
+		
 		getContentPane().setLayout(new MigLayout("", "[35px][33px,grow]", "[116.00px,grow][14px]"));
 		getContentPane().add(datumLB, "cell 0 0,alignx left,aligny top");
 		getContentPane().add(uhrzeitLB, "cell 1 0,grow");
@@ -427,7 +404,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 				onQuit();
 			}
 		});
-
+		
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
@@ -435,17 +412,17 @@ public class UhrzeitFrame extends JFrame implements Observer {
 				if (!e.getBoolean(Einstellungen.ENABLE_FULLSCREEN_QUICK_SHOW)) {
 					return;
 				}
-
+				
 				if (arg0.getClickCount() == 2) {
 					fullscreenMode();
 				}
 			}
 		});
-
+		
 		logframe = new ExtendedPingLogFrame(this);
 		NeoUhrzeit.getPingCalculator().setExtendedLog(logframe);
 		vollbildFrame = new VollbildUhrzeitFrame();
-
+		
 		frameTimer = new Timer(1, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -454,7 +431,7 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		});
 		frameTimer.setRepeats(true);
 		frameTimer.start();
-
+		
 		try {
 			readFromSettings();
 		} catch (Exception e) {
@@ -467,45 +444,37 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		}
 		setAlwaysOnTop(NeoUhrzeit.getEinstellungen().getBoolean(Einstellungen.ONTOP));
 		initStyleButtons();
-
+		
 		setVisible(true);
 	}
-
+	
 	protected void fullscreenMode() {
 		vollbildFrame.zeigen();
 	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		if (o instanceof DisplayData) {
-			DisplayData d = (DisplayData) o;
-			updateDisplayedData(d);
-		}
-	}
-
+	
 	public void updateDisplayedData(DisplayData d) {
 		Einstellungen e = NeoUhrzeit.getEinstellungen();
 		String uhr = d.getUhrzeit();
 		if (e.getBoolean(Einstellungen.PRAEFIX_UHRZEIT))
 			uhr = "Uhrzeit: " + uhr;
 		uhrzeitLB.setText(uhr);
-
+		
 		String dat = d.getDatum();
 		if (e.getBoolean(Einstellungen.PRAEFIX_DATUM))
 			dat = "Datum: " + dat;
 		datumLB.setText(dat);
-
+		
 		laufzeitLB.setText(d.getLaufzeit());
 		if (NeoUhrzeit.getPingCalculator().isServiceRunning()) {
 			pingLB.setText(d.getPing());
 		} else {
 			pingLB.setText("Pingservice deaktiviert.");
 		}
-
+		
 		if (d.isNeueMinute()) {
 			int threshold = NeoUhrzeit.getEinstellungen().getInteger(Einstellungen.PING_THRESHOLD);
 			PingCalculator c = NeoUhrzeit.getPingCalculator();
-
+			
 			int ping = c.getDurchschnittsping();
 			System.out.println(c.getLogTimeFormat() + " - Durchschnittsping diese Minute: " + ping);
 			if (ping >= threshold || ping < 0) {
@@ -514,48 +483,48 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			c.resetDurchschnittsping();
 		}
 	}
-
+	
 	private void resetVorgang() {
 		if (resetDimension != null) {
 			int w = getWidth();
 			int h = getHeight();
-
+			
 			int wi = resettingMod(w, (int) resetDimension.getWidth());
 			int hi = resettingMod(h, (int) resetDimension.getHeight());
-
+			
 			setSize(w + wi, h + hi);
 			if (wi == 0 && hi == 0) {
 				resetDimension = null;
 			}
 		}
-
+		
 		if (resetPoint != null) {
 			int x = (int) getX();
 			int y = (int) getY();
-
+			
 			int xi = resettingMod(x, (int) resetPoint.getX());
 			int yi = resettingMod(y, (int) resetPoint.getY());
-
+			
 			setLocation(x + xi, y + yi);
 			if (xi == 0 && yi == 0) {
 				resetPoint = null;
 			}
 		}
-
+		
 		if (resetDimension == null && resetPoint == null) {
 			frameTimer.stop();
 		}
 	}
-
+	
 	private void readFromSettings() {
 		// TODO read from settings here
 		Einstellungen e = NeoUhrzeit.getEinstellungen();
 		PingCalculator c = NeoUhrzeit.getPingCalculator();
-
+		
 		int x = e.getInteger(Einstellungen.POS_X);
 		int y = e.getInteger(Einstellungen.POS_Y);
 		setLocation(x, y);
-
+		
 		int w = e.getInteger(Einstellungen.WIDTH);
 		int h = e.getInteger(Einstellungen.HEIGHT);
 		if (h > 0 && w > 0) {
@@ -566,45 +535,45 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		}
 		startupSize = getSize();
 		setFontsize(e.getInteger(Einstellungen.FONTSIZE));
-
+		
 		resizableCB.setSelected(e.getBoolean(Einstellungen.RESIZEABLE));
 		setResizable(e.getBoolean(Einstellungen.RESIZEABLE));
 		ontopCB.setSelected(e.getBoolean(Einstellungen.ONTOP));
 		e.getBoolean(Einstellungen.ONTOP);
-
+		
 		setPingAdress(e.getString(Einstellungen.PING_TARGET));
-
+		
 		DisplayData data = NeoUhrzeit.getDisplayData();
 		data.setDatumStyle(e.getInteger(Einstellungen.STYLE_DATUM));
 		data.setUhrzeitStyle(e.getInteger(Einstellungen.STYLE_UHRZEIT));
-
+		
 		quickHideBT.setSelected(e.getBoolean(Einstellungen.ENABLE_FULLSCREEN_QUICK_HIDE));
 		quickShowBT.setSelected(e.getBoolean(Einstellungen.ENABLE_FULLSCREEN_QUICK_SHOW));
-
+		
 		Boolean b = e.getBoolean(Einstellungen.ENABLE_PINGTEST);
 		c.setEnabled(b);
 		enablePingtestBT.setSelected(b);
-
+		
 		updateThresholdBT();
-
-		// Werte f¸r sp‰ter testen
+		
+		// Werte f√ºr sp√§ter testen
 		e.getInteger(Einstellungen.STYLE_DATUM);
 		e.getInteger(Einstellungen.STYLE_UHRZEIT);
 		e.getBoolean(Einstellungen.PRAEFIX_DATUM);
 		e.getBoolean(Einstellungen.PRAEFIX_UHRZEIT);
-
+		
 		System.out.println("Settings loaded and applied.");
 	}
-
+	
 	public void onQuit() {
 		System.out.println("Wandow closing...");
 		Einstellungen e = NeoUhrzeit.getEinstellungen();
-
+		
 		e.set(Einstellungen.POS_X, String.valueOf(getX()));
 		e.set(Einstellungen.POS_Y, String.valueOf(getY()));
 		e.set(Einstellungen.WIDTH, String.valueOf(getWidth()));
 		e.set(Einstellungen.HEIGHT, String.valueOf(getHeight()));
-
+		
 		File f = NeoUhrzeit.getFilemanager().getSettingsFile();
 		try {
 			e.save(f);
@@ -612,40 +581,40 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			e1.printStackTrace();
 		}
 	}
-
+	
 	public void setFontsize(float size) {
 		if (size <= 0) {
-			NeoUhrzeit.showErrormessage("Die neue grˆﬂe ist zu klein.nBitte w‰hlen Sie einen wert grˆﬂer als null.");
+			NeoUhrzeit.showErrormessage("Die neue gr√∂√üe ist zu klein.\nBitte w√§hlen Sie einen wert gr√∂√üer als 0.");
 			return;
 		}
-
+		
 		Font f = uhrzeitLB.getFont().deriveFont(size);
-
+		
 		datumLB.setFont(f);
 		pingLB.setFont(f);
 		laufzeitLB.setFont(f);
-		fontSizeCB.setText("Schriftgrˆﬂe ‰ndern [" + (int) size + "]");
-
+		fontSizeCB.setText("Schriftgr√∂√üe √§ndern [" + (int) size + "]");
+		
 		NeoUhrzeit.getEinstellungen().set(Einstellungen.FONTSIZE, String.valueOf((int) size));
 	}
-
+	
 	private void initStyleButtons() {
 		Einstellungen e = NeoUhrzeit.getEinstellungen();
 		e.getBoolean(Einstellungen.PRAEFIX_UHRZEIT);
-
+		
 		// TODO generateButtons
 		uhrzeitStyleMN.add(generateStyleMenuItem(DateFormat.SHORT, true));
 		uhrzeitStyleMN.add(generateStyleMenuItem(DateFormat.MEDIUM, true));
 		uhrzeitStyleMN.add(generateStyleMenuItem(DateFormat.LONG, true));
 		uhrzeitStyleMN.add(generateStyleMenuItem(DateFormat.FULL, true));
-
+		
 		datumStyleMN.add(generateStyleMenuItem(DateFormat.SHORT, false));
 		datumStyleMN.add(generateStyleMenuItem(DateFormat.MEDIUM, false));
 		datumStyleMN.add(generateStyleMenuItem(DateFormat.LONG, false));
 		datumStyleMN.add(generateStyleMenuItem(DateFormat.FULL, false));
-
+		
 		uhrzeitStyleMN.addSeparator();
-		uhrzeitPrafixBT = new JCheckBoxMenuItem("Zeige Pr‰fix");
+		uhrzeitPrafixBT = new JCheckBoxMenuItem("Zeige Pr√§fix");
 		uhrzeitStyleMN.add(uhrzeitPrafixBT);
 		uhrzeitPrafixBT.addActionListener(new ActionListener() {
 			@Override
@@ -655,9 +624,9 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		});
 		uhrzeitPrafixBT.setSelected(e.getBoolean(Einstellungen.PRAEFIX_UHRZEIT));
-
+		
 		datumStyleMN.addSeparator();
-		datumPrafixBT = new JCheckBoxMenuItem("Zeige Pr‰fix");
+		datumPrafixBT = new JCheckBoxMenuItem("Zeige Pr√§fix");
 		datumStyleMN.add(datumPrafixBT);
 		datumPrafixBT.addActionListener(new ActionListener() {
 			@Override
@@ -668,32 +637,32 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		});
 		datumPrafixBT.setSelected(e.getBoolean(Einstellungen.PRAEFIX_DATUM));
 	}
-
+	
 	// @SuppressWarnings("unused")
 	private JMenuItem generateStyleMenuItem(int style, boolean uhrzeit) {
 		JRadioButtonMenuItem item = new JRadioButtonMenuItem();
 		String s = "";
-
+		
 		switch (style) {
-		case DateFormat.DEFAULT:
-			s = "Normal";
-			break;
-		case DateFormat.FULL:
-			s = "Vollst‰ndig";
-			break;
-		case DateFormat.LONG:
-			s = "Lang";
-			break;
-		case DateFormat.SHORT:
-			s = "Kurz";
-			break;
-		default:
-			return new JMenuItem("<Unbekannt>");
+			case DateFormat.DEFAULT:
+				s = "Normal";
+				break;
+			case DateFormat.FULL:
+				s = "Vollst√§ndig";
+				break;
+			case DateFormat.LONG:
+				s = "Lang";
+				break;
+			case DateFormat.SHORT:
+				s = "Kurz";
+				break;
+			default:
+				return new JMenuItem("<Unbekannt>");
 		}
 		item.setText(s);
 		styleMap.put(item, new Integer(style));
 		Einstellungen e = NeoUhrzeit.getEinstellungen();
-
+		
 		if (uhrzeit) {
 			uhrzeitStyleGroup.add(item);
 			item.addActionListener(new ActionListener() {
@@ -725,32 +694,19 @@ public class UhrzeitFrame extends JFrame implements Observer {
 		}
 		return item;
 	}
-
+	
 	public void setPingAdress(String adress) {
 		NeoUhrzeit.getEinstellungen().set(Einstellungen.PING_TARGET, adress);
 		pingZielTF.setText("[" + adress + "]");
 	}
-
-	private Point getResettingLocation() {
-		Point p = getLocation();
-		setLocationRelativeTo(null);
-		Point res = getLocation();
-		setLocation(p);
-
-		return res;
-	}
-
+	
 	private void updateThresholdBT() {
 		Einstellungen e = NeoUhrzeit.getEinstellungen();
 		int i = e.getInteger(Einstellungen.PING_THRESHOLD);
-
+		
 		thresholdBT.setText("[" + i + "]");
 	}
-
-	public VollbildUhrzeitFrame getVollbildFrame() {
-		return vollbildFrame;
-	}
-
+	
 	private int resettingMod(int current, int soll) {
 		if (current < soll) {
 			return RESET_MODIFIKATOR;
@@ -760,5 +716,26 @@ public class UhrzeitFrame extends JFrame implements Observer {
 			}
 		}
 		return 0;
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		if (o instanceof DisplayData) {
+			DisplayData d = (DisplayData) o;
+			updateDisplayedData(d);
+		}
+	}
+	
+	private Point getResettingLocation() {
+		Point p = getLocation();
+		setLocationRelativeTo(null);
+		Point res = getLocation();
+		setLocation(p);
+		
+		return res;
+	}
+	
+	public VollbildUhrzeitFrame getVollbildFrame() {
+		return vollbildFrame;
 	}
 }
