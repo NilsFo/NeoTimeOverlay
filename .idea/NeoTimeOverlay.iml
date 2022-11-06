@@ -9,5 +9,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="miglayout-src" level="project" />
+    <orderEntry type="library" name="miglayout" level="project" />
   </component>
 </module>

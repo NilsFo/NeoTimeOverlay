@@ -15,9 +15,9 @@ import java.net.URI;
 public class NeoUhrzeit {
 	
 	public static final String AUTHOR = "Nils Förster";
-	public static final String DATE = "13.11.2015";
+	public static final String DATE = "06.11.2022";
 	public static final String TITLE = "Neo Uhrzeit Overlay";
-	public static final String VERSION = "V 1.0";
+	public static final String VERSION = "V 1.0.1";
 	
 	private static FileManager filemanager;
 	private static Einstellungen einstellungen;
