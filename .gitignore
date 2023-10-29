@@ -2,6 +2,9 @@
 # PROJECT SPECIFIC GITIGNORE
 
 out/*
+neo_time_overlay_launch4j_config.xml
+
+# GENERAL
 
 .metadata
 bin/

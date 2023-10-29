@@ -115,7 +115,7 @@ public class VollbildUhrzeitFrame extends JFrame implements Observer {
 	}
 	
 	private void updateDisplayedData(DisplayData d) {
-		uhrzeitLB.setText(d.getUhrzeit());
+		uhrzeitLB.setText(d.getUhrzeitFullscreen());
 	}
 	
 	@Override

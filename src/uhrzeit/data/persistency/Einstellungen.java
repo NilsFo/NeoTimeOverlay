@@ -28,6 +28,7 @@ public class Einstellungen {
 	public static final String RESIZEABLE = "resizeable";
 	public static final String STYLE_DATUM = "datumstyle";
 	public static final String STYLE_UHRZEIT = "uhrzeitstyle";
+	public static final String STYLE_UHRZEIT_FULLSCREN = "uhrzeitstyleFullscreen";
 	public static final String WIDTH = "width";
 	private Properties properties;
 	
@@ -91,6 +92,7 @@ public class Einstellungen {
 		p.setProperty(PING_THRESHOLD, "120");
 		p.setProperty(STYLE_DATUM, DateFormat.FULL + "");
 		p.setProperty(STYLE_UHRZEIT, DateFormat.MEDIUM + "");
+		p.setProperty(STYLE_UHRZEIT_FULLSCREN, DateFormat.SHORT + "");
 		
 		p.setProperty(ONTOP, "true");
 		p.setProperty(RESIZEABLE, "true");
